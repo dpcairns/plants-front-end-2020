@@ -18,10 +18,11 @@ export default class Signup extends Component {
             .post('https://plant-dani-plant-2020.herokuapp.com/auth/signup')
             .send(this.state); // we can send state because the keys are the same on the front and back end
 
-
-        console.log(user.body, 'sending you to todos');
         this.setState({ loading: false })
         
+        this.props.changeTokenAndUsername(user.body.email, user.body.token);
+        
+        this.props.history.push('/plants');
     }
 
     render() {
