@@ -5,36 +5,45 @@ export default class Plants extends Component {
     state = {
         plants: [],
         plantName: '',
-        coolFactor: ''
+        coolFactor: '',
+        loading: false
     }
     
     componentDidMount = async () => {
+        await this.fetchPlants()
+    }
+
+    fetchPlants = async () => {
+        await this.setState({ loading: true });
         const response = await request.get('https://plant-dani-plant-2020.herokuapp.com/api/plants')
         .set('Authorization', this.props.token)
 
-        this.setState({ plants: response.body })
+        await this.setState({ plants: response.body, loading: false })
     }
 
     handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         const newPlant = {
             name: this.state.plantName,
             cool_factor: this.state.coolFactor,
         };
         
-        // optimistic updates
-        const plantsCopy = this.state.plants.slice();
-        const newPlants = plantsCopy.push(newPlant);
-        // code golf version:
-        // const newPlants = [...this.state.plants, newPlant];
-        
-        
-        this.setState({ plants: newPlants })
+        await this.setState({ loading: true });
 
         await request.post('https://plant-dani-plant-2020.herokuapp.com/api/plants')
         .send(newPlant)
-        .set('Authorization', this.props.token)  
+        .set('Authorization', this.props.token)  ;
+
+        await this.fetchPlants();
+    }
+
+    handleWaterClick = async (someId) => {
+        // let's update a particular plant (we'll need its id)
+        await request.put(`https://plant-dani-plant-2020.herokuapp.com/api/plants/${someId}`)
+        .set('Authorization', this.props.token)  ;
+
+        await this.fetchPlants();
     }
 
     render() {
@@ -62,8 +71,19 @@ export default class Plants extends Component {
                         </button>
                 </form>
                 {
-                    Boolean(this.state.plants.length) && this.state.plants.map(plant => <div>
-                        name: {plant.name}; watered: {plant.is_watered}
+                    this.state.loading 
+                        ? 'LOADING!!!!!' 
+                        : this.state.plants.map(plant => <div key={`${plant.name}${plant.id}${Math.random()}`} style={{ 
+                            textDecoration: plant.is_watered ? 'line-through' : 'none' }
+                        }>
+                        name: {plant.name}
+                        {
+                            plant.is_watered ? '' : <button 
+                            // if you're ever onClicking inside of a map, you might need to make an anonymous function like this:
+                                onClick={() => this.handleWaterClick(plant.id)}>
+                                Water plant
+                            </button>
+                        }
                         </div>)
                 }
             </div>
