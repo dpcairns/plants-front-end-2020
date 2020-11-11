@@ -9,10 +9,6 @@ export default class Plants extends Component {
     }
     
     componentDidMount = async () => {
-        await this.fetchPlants()
-    }
-
-    fetchPlants = async() => {
         const response = await request.get('https://plant-dani-plant-2020.herokuapp.com/api/plants')
         .set('Authorization', this.props.token)
 
@@ -21,16 +17,25 @@ export default class Plants extends Component {
 
     handleSubmit = async (e) => {
         e.preventDefault();
-
-        await request.post('https://plant-dani-plant-2020.herokuapp.com/api/plants')
-        .send({
+        
+        const newPlant = {
             name: this.state.plantName,
             cool_factor: this.state.coolFactor,
-        })
-        .set('Authorization', this.props.token)
+        };
+        
+        // optimistic updates
+        const plantsCopy = this.state.plants.slice();
+        const newPlants = plantsCopy.push(newPlant);
+        // code golf version:
+        // const newPlants = [...this.state.plants, newPlant];
+        
+        
+        this.setState({ plants: newPlants })
 
-        await this.fetchPlants();
-      }
+        await request.post('https://plant-dani-plant-2020.herokuapp.com/api/plants')
+        .send(newPlant)
+        .set('Authorization', this.props.token)  
+    }
 
     render() {
         return (
