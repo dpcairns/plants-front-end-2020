@@ -21,13 +21,14 @@ export default class Signup extends Component {
         this.setState({ loading: false })
         
         this.props.changeTokenAndUsername(user.body.email, user.body.token);
-        
+
         this.props.history.push('/plants');
     }
 
     render() {
         return (
             <div>
+                <h2>Sign up</h2>
                 <form onSubmit={this.handleSubmit}>
                     <label>
                         Email:

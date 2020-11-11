@@ -10,6 +10,7 @@ import Login from './Login.js'
 import SignUp from './SignUp.js'
 import Home from './Home.js'
 import Plants from './Plants.js'
+import PrivateRoute from './PrivateRoute.js';
 
 export default class App extends Component {
   state = {
@@ -27,29 +28,57 @@ export default class App extends Component {
     })
   }
 
+  logOut = () => {
+    localStorage.setItem('TOKEN', '');
+    localStorage.setItem('USERNAME', '');
+
+    this.setState({
+      username: '',
+      token: ''
+    })
+
+  }
+
   render() {
     return (
       <div>
         <Router>
           <ul>
-            { this.state.username}
-            <Link to="/login"><div>log in</div></Link>
+            {
+            this.state.token 
+            ? <div>
+              {this.state.username}
+              <button onClick={this.logOut}>Log out</button>
+            </div>
+          : <>
+           <Link to="/login"><div>log in</div></Link>
             <Link to="/signup"><div>sign up</div></Link>
+            </>}
           </ul>
           <Switch>
             <Route exact path='/' render={(routerProps) => <Home {...routerProps} />} />
-            <Route exact path='/login' render={(routerProps) => <Login {...routerProps} />} />
+            <Route exact path='/login' render={(routerProps) => 
+                <Login 
+                  {...routerProps} 
+                  changeTokenAndUsername={this.changeTokenAndUsername} 
+              />
+              } 
+            />
             <Route 
               exact 
               path='/signup' 
               render={(routerProps) => 
-                <SignUp  
-                  {...routerProps} 
-                  changeTokenAndUsername={this.changeTokenAndUsername} 
-                  />
+                  <SignUp  
+                    {...routerProps} 
+                    changeTokenAndUsername={this.changeTokenAndUsername} 
+                    />
                 } 
               />
-            <Route exact path='/plants' render={(routerProps) => <Plants {...routerProps} token={this.state.token} />} />
+            <PrivateRoute 
+              token={this.state.token} 
+              exact 
+              path='/plants' 
+              render={(routerProps) => <Plants {...routerProps} token={this.state.token} />} />
 
           </Switch>
         </Router>
